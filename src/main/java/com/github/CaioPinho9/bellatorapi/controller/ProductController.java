@@ -1,12 +1,15 @@
 package com.github.CaioPinho9.bellatorapi.controller;
 
 import com.github.CaioPinho9.bellatorapi.dto.ProductDTO;
+import com.github.CaioPinho9.bellatorapi.model.Product;
 import com.github.CaioPinho9.bellatorapi.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/product")
@@ -20,26 +23,39 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAll());
     }
 
-    @GetMapping(path = {"/{id}"})
+    @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable long id) {
-        return productService.findById(id)
-                .map(record -> ResponseEntity.ok().body(record))
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Product> productOptional = productService.findById(id);
+        if (!productOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
     }
 
     @PostMapping("/")
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
-        return ResponseEntity.ok(productService.createProduct(productDTO));
+        return ResponseEntity.ok(productService.save(Product.convert(productDTO)));
     }
 
-    @PutMapping(value ="/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable("id") long id, @RequestBody ProductDTO productDTO) {
-        return ResponseEntity.ok(productService.update(id, productDTO));
+        Optional<Product> productOptional = productService.findById(id);
+        if (!productOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        }
+        Product product = Product.convert(productDTO);
+        product.setId(id);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.save(product));
     }
 
-    @DeleteMapping(path = {"/{id}"})
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable long id) {
-        return ResponseEntity.ok(productService.delete(id));
+        Optional<Product> productOptional = productService.findById(id);
+        if (!productOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        }
+        productService.delete(productOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully.");
     }
 
 }

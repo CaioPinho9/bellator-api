@@ -24,28 +24,11 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product createProduct(ProductDTO productDTO) {
-        Product product = new Product(productDTO.getName(), productDTO.getPrice(), productDTO.getSize());
+    public Product save(Product product) {
         return productRepository.save(product);
     }
 
-    public Optional<?> update(long id, ProductDTO productDTO) {
-        productRepository.findById(id)
-                .map(record -> {
-                    record.setName(productDTO.getName());
-                    record.setPrice(productDTO.getPrice());
-                    record.setSize(productDTO.getSize());
-                    Product productUpdated = productRepository.save(record);
-                    return ResponseEntity.ok().body(productUpdated);
-                }).orElse(ResponseEntity.notFound().build());
-        return null;
-    }
-
-    public Optional<?> delete(long id) {
-        return productRepository.findById(id)
-                .map(record -> {
-                    productRepository.deleteById(id);
-                    return ResponseEntity.ok().build();
-                });
+    public void delete(Product product) {
+        productRepository.delete(product);
     }
 }

@@ -1,5 +1,7 @@
 package com.github.CaioPinho9.bellatorapi.model;
 
+import com.github.CaioPinho9.bellatorapi.dto.ProductDTO;
+
 import javax.persistence.*;
 
 @Entity
@@ -20,6 +22,10 @@ public class Product {
     }
 
     public Product() {
+    }
+
+    public static Product convert(ProductDTO productDTO) {
+        return new Product(productDTO.getName(), productDTO.getPrice(), productDTO.getSize());
     }
 
     public Long getId() {
