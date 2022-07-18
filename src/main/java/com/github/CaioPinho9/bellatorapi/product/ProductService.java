@@ -1,10 +1,6 @@
-package com.github.CaioPinho9.bellatorapi.service;
+package com.github.CaioPinho9.bellatorapi.product;
 
-import com.github.CaioPinho9.bellatorapi.dto.ProductDTO;
-import com.github.CaioPinho9.bellatorapi.model.Product;
-import com.github.CaioPinho9.bellatorapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.github.CaioPinho9.bellatorapi.dto;
+package com.github.CaioPinho9.bellatorapi.product;
 
-public class ProductDTO {
+public class ProductRequest {
     private String name;
     private double price;
     private double size;

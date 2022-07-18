@@ -1,8 +1,5 @@
-package com.github.CaioPinho9.bellatorapi.controller;
+package com.github.CaioPinho9.bellatorapi.product;
 
-import com.github.CaioPinho9.bellatorapi.dto.ProductDTO;
-import com.github.CaioPinho9.bellatorapi.model.Product;
-import com.github.CaioPinho9.bellatorapi.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,17 +30,17 @@ public class ProductController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
-        return ResponseEntity.ok(productService.save(Product.convert(productDTO)));
+    public ResponseEntity<?> createProduct(@RequestBody ProductRequest productRequest) {
+        return ResponseEntity.ok(productService.save(Product.convert(productRequest)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable("id") long id, @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<?> update(@PathVariable("id") long id, @RequestBody ProductRequest productRequest) {
         Optional<Product> productOptional = productService.findById(id);
         if (!productOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
         }
-        Product product = Product.convert(productDTO);
+        Product product = Product.convert(productRequest);
         product.setId(id);
         return ResponseEntity.status(HttpStatus.OK).body(productService.save(product));
     }

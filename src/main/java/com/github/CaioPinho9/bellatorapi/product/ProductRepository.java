@@ -1,6 +1,5 @@
-package com.github.CaioPinho9.bellatorapi.repository;
+package com.github.CaioPinho9.bellatorapi.product;
 
-import com.github.CaioPinho9.bellatorapi.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

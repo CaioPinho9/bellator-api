@@ -1,6 +1,4 @@
-package com.github.CaioPinho9.bellatorapi.model;
-
-import com.github.CaioPinho9.bellatorapi.dto.ProductDTO;
+package com.github.CaioPinho9.bellatorapi.product;
 
 import javax.persistence.*;
 
@@ -24,8 +22,8 @@ public class Product {
     public Product() {
     }
 
-    public static Product convert(ProductDTO productDTO) {
-        return new Product(productDTO.getName(), productDTO.getPrice(), productDTO.getSize());
+    public static Product convert(ProductRequest productRequest) {
+        return new Product(productRequest.getName(), productRequest.getPrice(), productRequest.getSize());
     }
 
     public Long getId() {
