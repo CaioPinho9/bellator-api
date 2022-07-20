@@ -19,4 +19,9 @@ public class RegistrationController {
     public ResponseEntity<String> confirm(@RequestParam("token") String token) {
         return registrationService.confirmToken(token);
     }
+
+    @PostMapping(path = "token")
+    public ResponseEntity<String> newToken(@RequestBody RegistrationRequest request) {
+        return registrationService.newToken(request);
+    }
 }
