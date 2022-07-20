@@ -1,9 +1,10 @@
 package com.github.CaioPinho9.bellatorapi.appuser;
 
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationToken;
-import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationTokenRepository;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,13 +29,13 @@ public class AppUserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG,email)));
     }
 
-    public String singUpUser(AppUser appUser) {
+    public ResponseEntity<String> singUpUser(AppUser appUser) {
         boolean userExists = appUserRepository
                 .findByEmail(appUser.getEmail())
                 .isPresent();
 
         if (userExists) {
-            throw new IllegalStateException("email already taken");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("email already taken");
         }
 
         String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
@@ -53,7 +54,7 @@ public class AppUserService implements UserDetailsService {
 
         confirmationTokenService.saveConfirmationToken(confirmationToken);
 
-        return token;
+        return ResponseEntity.status(HttpStatus.CREATED).body(token);
     }
 
     public int enableAppUser(String email) {
