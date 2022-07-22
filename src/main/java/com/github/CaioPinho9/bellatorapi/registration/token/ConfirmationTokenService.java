@@ -1,10 +1,8 @@
 package com.github.CaioPinho9.bellatorapi.registration.token;
 
-import com.github.CaioPinho9.bellatorapi.appuser.AppUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
