@@ -28,6 +28,11 @@ public class AppUserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG,email)));
     }
 
+    /**
+     * <p>Check if the user already exists</p>
+     * <p>Encrypt the password using cryptPassword</p>
+     * @return confirmation token, used to activate the user
+     */
     public String singUpUser(AppUser appUser) {
         boolean userExists = appUserRepository
                 .findByEmail(appUser.getEmail())
@@ -37,23 +42,33 @@ public class AppUserService implements UserDetailsService {
             return "email already taken";
         }
 
-        String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
-        appUser.setPassword(encodedPassword);
-
-        appUserRepository.save(appUser);
+        appUser = cryptPassword(appUser);
 
         return createToken(appUser);
     }
 
+    /**
+     * <p>Encrypt using raw password</p>
+     * <p>Changes the user password</p>
+     * <p>Updates the user in the database</p>
+     * @param appUser User with raw password
+     * @return User with an encrypted password
+     */
+    public AppUser cryptPassword(AppUser appUser) {
+        String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
+        appUser.setPassword(encodedPassword);
+        appUserRepository.save(appUser);
+        return appUser;
+    }
+
+    /**
+     * <p>The token is created randomly</p>
+     * <p>confirmationToken receives the time it has created and expires 15 minutes later </p>
+     * <p>confirmationToken is saved in the database</p>
+     * @param appUser The token needs a user to confirm
+     * @return The token that will be created
+     */
     public String createToken(AppUser appUser) {
-        boolean userExists = appUserRepository
-                .findByEmail(appUser.getEmail())
-                .isPresent();
-
-        if (!userExists) {
-            return "user not found";
-        }
-
         String token = UUID.randomUUID().toString();
 
         ConfirmationToken confirmationToken = new ConfirmationToken(
@@ -68,8 +83,13 @@ public class AppUserService implements UserDetailsService {
         return token;
     }
 
-    public int enableAppUser(String email) {
-        return appUserRepository.enableAppUser(email);
+    /**
+     * <p>Enable the user in the database</p>
+     *
+     * @param email Used to find which user enable
+     */
+    public void enableAppUser(String email) {
+        appUserRepository.enableAppUser(email);
     }
 
     public Optional<AppUser> findByEmail(String email) {

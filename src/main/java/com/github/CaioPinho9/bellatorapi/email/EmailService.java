@@ -20,14 +20,25 @@ import java.util.Properties;
 public class EmailService implements EmailSender {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
+
+    /**
+     * <p>String <strong>from</strong> email that will send</p>
+     * <p>String <strong>password</strong> to login the email</p>
+     */
     @Value("${spring.mail.username}")
     String from;
     @Value("${spring.mail.password}")
     String password;
 
+    /**
+     * <p>Properties needed to send email</p>
+     * @param email Who will receive the email
+     * @param content Content of the email
+     */
     @Override
     @Async
-    public void send(String to, String email) {
+    public void send(String email, String content) {
+
         String subject = "Confirm your email";
 
         Properties props = new Properties();
@@ -52,11 +63,11 @@ public class EmailService implements EmailSender {
 
             MimeMessage mimeMessage = new MimeMessage(session);
             mimeMessage.setSender(addressFrom);
-            mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
 
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-            helper.setText(email, true);
-            helper.setTo(to);
+            helper.setText(content, true);
+            helper.setTo(email);
             helper.setSubject(subject);
 
             transport.connect();

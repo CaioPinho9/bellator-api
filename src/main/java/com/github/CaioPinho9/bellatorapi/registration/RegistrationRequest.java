@@ -5,6 +5,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Variables of the Http Body
+ */
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode

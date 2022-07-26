@@ -6,7 +6,9 @@ import com.github.CaioPinho9.bellatorapi.appuser.AppUserService;
 import com.github.CaioPinho9.bellatorapi.email.EmailSender;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationToken;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationTokenService;
+import com.github.CaioPinho9.bellatorapi.security.PasswordEnconder;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,22 @@ public class RegistrationService {
     private final AppUserService appUserService;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
+    private PasswordEnconder passwordEncoder;
 
+    /**
+     * <p><strong>tokenLink:</strong> Token confirmation link</p>
+     */
+    @Value("${spring.mail.token}")
+    String tokenLink;
+
+    /**
+     * <p>Validate the email</p>
+     * <p><strong>singUpUser():</strong> Create a token and encrypt password</p>
+     * <p>Check if the email already is used</p>
+     * <p>Send token email</p>
+     * @param request Http Body - First name, last name, email, password
+     * @return Http Status
+     */
     public ResponseEntity<String> register(RegistrationRequest request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
         if (!isValidEmail) {
@@ -39,14 +56,48 @@ public class RegistrationService {
             ));
 
         if (token.equals("email already taken")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(token);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(token);
         }
 
-        sendEmail(request, token);
+        sendTokenEmail(request, token);
 
         return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
+    /**
+     * <p>Find the user using the email</p>
+     * <p>Check if the old password is right</p>
+     * <p>Encrypt the new password</p>
+     * @param newPassword New password
+     * @param request Http Body - email and old password to validate the change
+     * @return Http Status
+     */
+    public ResponseEntity<String> changePassword(String newPassword, RegistrationRequest request) {
+        AppUser appUser = appUserService.findByEmail(request.getEmail()).orElse(null);
+
+        if (appUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
+        }
+
+        boolean rightPassword = passwordEncoder.matches(request.getPassword(), appUser.getPassword());
+        if (!rightPassword) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("wrong password");
+        }
+
+        appUser.setPassword(newPassword);
+        appUserService.cryptPassword(appUser);
+
+        return ResponseEntity.status(HttpStatus.OK).body("password changed");
+    }
+
+    /**
+     * <p>Find confirmationToken by token</p>
+     * <p>Check if found, not confirmed and not expired</p>
+     * <p>Confirm token in database and set confirmed time</p>
+     * <p>Enable user</p>
+     * @param token which is confirmed
+     * @return Http Status
+     */
     @Transactional
     public ResponseEntity<String> confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService
@@ -58,7 +109,7 @@ public class RegistrationService {
         }
 
         if (confirmationToken.getConfirmedAt() != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("email already confirmed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("email already confirmed");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
@@ -68,35 +119,60 @@ public class RegistrationService {
         }
 
         confirmationTokenService.setConfirmedAt(token);
-        appUserService.enableAppUser(
-                confirmationToken.getAppUser().getEmail()
-        );
+        appUserService.enableAppUser(confirmationToken.getAppUser().getEmail());
+
         return ResponseEntity.status(HttpStatus.OK).body("confirmed");
     }
 
+    /**
+     * <p>Check if user exists using email</p>
+     * <p>Check if user isn't enabled</p>
+     * <p><strong>createToken():</strong> creates the new confirmation token</p>
+     * <p><strong>sendTokenEmail():</strong> creates and send a confirmation email</p>
+     * @param request email
+     * @return Http Status - token created
+     */
     public ResponseEntity<String> newToken(RegistrationRequest request) {
         AppUser appUser = appUserService.findByEmail(request.getEmail()).orElse(null);
 
-        assert appUser != null;
+        if (appUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
+        }
+
         if (appUser.getEnabled()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("user already was enabled");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user already was enabled");
         }
 
         String token = appUserService.createToken(appUser);
-        System.out.println(token);
-        sendEmail(request, token);
+        sendTokenEmail(request, token);
+
         return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
-    private void sendEmail(RegistrationRequest request, String token) {
-        System.out.println(token);
-        String link = "http://localhost:8080/api/v1/registration/confirm?token=" + token;
+    /**
+     * <p><strong>tokenLink:</strong> Http request used to confirm a token</p>
+     * <p>Find user to get the first name</p>
+     * <p>Concat the link with token</p>
+     * <p>Send the email</p>
+     * @param request email
+     * @param token token
+     */
+    private void sendTokenEmail(RegistrationRequest request, String token) {
+        AppUser appUser = appUserService.findByEmail(request.getEmail()).orElse(null);
 
+        tokenLink += token;
+
+        assert appUser != null;
         emailSender.send(
-                request.getEmail(),
-                buildEmail(request.getFirstName(), link));
+                appUser.getEmail(),
+                buildEmail(appUser.getFirstName(), tokenLink));
     }
 
+    /**
+     * @param name User first name
+     * @param link Click to confirm the token and enable the user
+     * @return Email template
+     */
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
                 "\n" +

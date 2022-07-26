@@ -11,4 +11,11 @@ public class PasswordEnconder {
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    /**
+     * @return True if both are the same
+     */
+    public boolean matches(String password1, String password2) {
+        return bCryptPasswordEncoder().matches(password1, password2);
+    }
 }

@@ -7,7 +7,14 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-
+/**
+ * <p><strong>id:</strong> database id</p>
+ * <p><strong>token:</strong> token id, used to enable the user</p>
+ * <p><strong>createdAt:</strong> time the token was created</p>
+ * <p><strong>expiresAt:</strong> time the token expires</p>
+ * <p><strong>confirmedAt:</strong> if the token was confirmed, time the token was confirmed</p>
+ * <p><strong>appUser:</strong> each token has one user, each user can have multiple tokens</p>
+ */
 @Getter
 @Setter
 @NoArgsConstructor
