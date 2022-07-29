@@ -7,7 +7,7 @@ import com.github.CaioPinho9.bellatorapi.email.EmailSender;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationToken;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationTokenService;
 import com.github.CaioPinho9.bellatorapi.security.PasswordEnconder;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +17,14 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RegistrationService {
 
-    private EmailValidator emailValidator;
+    private final EmailValidator emailValidator;
     private final AppUserService appUserService;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
-    private PasswordEnconder passwordEncoder;
+    private final PasswordEnconder passwordEncoder;
 
     /**
      * <p><strong>tokenLink:</strong> Token confirmation link</p>

@@ -3,9 +3,9 @@ package com.github.CaioPinho9.bellatorapi.registration;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping(path = "api/v1/registration")
+@CrossOrigin
 @AllArgsConstructor
 public class RegistrationController {
     private RegistrationService registrationService;
@@ -26,7 +26,7 @@ public class RegistrationController {
      * @param token Confirmation token
      * @return Http Status
      */
-    @PutMapping(path = "confirm")
+    @GetMapping(path = "confirm")
     public ResponseEntity<String> confirm(@RequestParam("token") String token) {
         return registrationService.confirmToken(token);
     }
