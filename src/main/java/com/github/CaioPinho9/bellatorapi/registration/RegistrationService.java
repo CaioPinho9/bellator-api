@@ -105,23 +105,23 @@ public class RegistrationService {
                 .orElse(null);
 
         if (confirmationToken == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("token not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not found");
         }
 
         if (confirmationToken.getConfirmedAt() != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("email already confirmed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already confirmed");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("token expired");
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Token expired");
         }
 
         confirmationTokenService.setConfirmedAt(token);
         appUserService.enableAppUser(confirmationToken.getAppUser().getEmail());
 
-        return ResponseEntity.status(HttpStatus.OK).body("confirmed");
+        return ResponseEntity.status(HttpStatus.OK).body("Confirmed");
     }
 
     /**
