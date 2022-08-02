@@ -105,17 +105,17 @@ public class RegistrationService {
                 .orElse(null);
 
         if (confirmationToken == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("token not found");
         }
 
         if (confirmationToken.getConfirmedAt() != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already confirmed");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("email already confirmed");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Token expired");
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("token expired");
         }
 
         confirmationTokenService.setConfirmedAt(token);
@@ -160,12 +160,12 @@ public class RegistrationService {
     private void sendTokenEmail(RegistrationRequest request, String token) {
         AppUser appUser = appUserService.findByEmail(request.getEmail()).orElse(null);
 
-        tokenLink += token;
+        String link = tokenLink + token;
 
         assert appUser != null;
         emailSender.send(
                 appUser.getEmail(),
-                buildEmail(appUser.getFirstName(), tokenLink));
+                buildEmail(appUser.getFirstName(), link));
     }
 
     /**
