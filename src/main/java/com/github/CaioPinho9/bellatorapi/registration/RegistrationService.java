@@ -1,7 +1,6 @@
 package com.github.CaioPinho9.bellatorapi.registration;
 
 import com.github.CaioPinho9.bellatorapi.appuser.AppUser;
-import com.github.CaioPinho9.bellatorapi.appuser.AppUserRole;
 import com.github.CaioPinho9.bellatorapi.appuser.AppUserService;
 import com.github.CaioPinho9.bellatorapi.email.EmailSender;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationToken;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -47,13 +47,13 @@ public class RegistrationService {
         }
 
         String token = appUserService.singUpUser(
-            new AppUser(
-                    request.getFirstName(),
-                    request.getLastName(),
-                    request.getEmail(),
-                    request.getPassword(),
-                    AppUserRole.USER
-            ));
+                new AppUser(
+                        request.getFirstName(),
+                        request.getLastName(),
+                        request.getEmail(),
+                        request.getPassword(),
+                        Collections.singleton(appUserService.findByName("USER"))
+                ));
 
         if (token.equals("email already taken")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(token);

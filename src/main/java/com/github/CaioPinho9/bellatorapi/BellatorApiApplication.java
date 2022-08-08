@@ -9,5 +9,4 @@ public class BellatorApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BellatorApiApplication.class, args);
 	}
-
 }

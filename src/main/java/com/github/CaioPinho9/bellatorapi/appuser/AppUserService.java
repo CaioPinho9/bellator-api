@@ -3,13 +3,17 @@ package com.github.CaioPinho9.bellatorapi.appuser;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationToken;
 import com.github.CaioPinho9.bellatorapi.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,15 +21,22 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AppUserService implements UserDetailsService {
 
-    private final static String USER_NOT_FOUND_MSG = "user with email %s not found";
     private final AppUserRepository appUserRepository;
+    private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return appUserRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG,email)));
+        AppUser appUser = appUserRepository.findByEmail(email).orElse(null);
+        if (appUser == null) {
+            throw new UsernameNotFoundException("user not found");
+        }
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        appUser.getRoles().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        });
+        return new org.springframework.security.core.userdetails.User(appUser.getEmail(), appUser.getPassword(), authorities);
     }
 
     /**
@@ -94,5 +105,24 @@ public class AppUserService implements UserDetailsService {
 
     public Optional<AppUser> findByEmail(String email) {
         return appUserRepository.findByEmail(email);
+    }
+
+    public Role findByName(String roleName) {
+        return roleRepository.findByName(roleName);
+    }
+
+    @Transactional
+    public Role saveRole(Role role) {
+        return roleRepository.save(role);
+    }
+
+    @Transactional
+    public void addRoleToUser(String email, String roleName) {
+        AppUser appUser = appUserRepository.findByEmail(email).orElse(null);
+        if (appUser == null) {
+            throw new UsernameNotFoundException("user not found");
+        }
+        Role role = roleRepository.findByName(roleName);
+        appUser.getRoles().add(role);
     }
 }
