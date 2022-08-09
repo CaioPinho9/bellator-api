@@ -29,7 +29,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //Login and refresh don't need authorization
-        if (request.getServletPath().equals("/api/v1/login") || request.getServletPath().equals("/api/v1/token/refresh")) {
+        if (request.getServletPath().equals("/api/v1/login") || request.getServletPath().equals("/api/v1/token/refresh")
+                || request.getServletPath().equals("/api/v1/token/expires")) {
             filterChain.doFilter(request, response);
         } else {
             //Get http header and check if there's a token

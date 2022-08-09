@@ -97,6 +97,35 @@ public class AppUserController {
         }
         return null;
     }
+
+    @GetMapping("/token/expires")
+    public ResponseEntity<Map<String, String>> expiresToken(HttpServletRequest request, HttpServletResponse response) {
+        String accessHeader = request.getHeader("Access-Token");
+        String refreshHeader = request.getHeader("Refresh-Token");
+
+        Map<String, String> expired = new HashMap<>();
+
+        try {
+            DecodedJWT accessToken = Token.decode(accessHeader);
+        } catch (Exception exception) {
+            expired.put("accessToken", "expired");
+        }
+        try {
+            DecodedJWT refreshToken = Token.decode(refreshHeader);
+        } catch (Exception exception) {
+            expired.put("refreshToken", "expired");
+        }
+
+        //Send as response to the http body
+        try {
+            response.setContentType(APPLICATION_JSON_VALUE);
+            new ObjectMapper().writeValue(response.getOutputStream(), expired);
+        } catch (Exception ignored) {
+
+        }
+
+        return ResponseEntity.ok(expired);
+    }
 }
 
 @Getter
